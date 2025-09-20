@@ -196,13 +196,26 @@ export const CollegeResults = ({ colleges, preferences, onBack, onViewDetails }:
                      college.college_name.includes('Pune') ? 'Pune' : 'Maharashtra'}
                   </div>
                   
-                  <Button 
-                    variant="outline" 
-                    size="sm"
-                    onClick={() => onViewDetails(college)}
-                  >
-                    View Details
-                  </Button>
+                  <div className="flex gap-2">
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={() => onViewDetails(college)}
+                    >
+                      View Details
+                    </Button>
+                    {college.isRecommended && (
+                      <Button 
+                        size="sm"
+                        onClick={() => {
+                          const searchQuery = college.college_name.replace(/\s+/g, '+');
+                          window.open(`https://www.google.com/search?q=${searchQuery}+official+website`, '_blank');
+                        }}
+                      >
+                        More Info
+                      </Button>
+                    )}
+                  </div>
                 </div>
               </CardContent>
             </Card>

@@ -101,10 +101,29 @@ export const filterColleges = (
     });
 };
 
+const getSeatTypeFullForm = (type: string): string => {
+  const fullForms: { [key: string]: string } = {
+    'GOPENS': 'GOPENS (General Open)',
+    'SC': 'SC (Scheduled Caste)',
+    'ST': 'ST (Scheduled Tribe)', 
+    'OBC': 'OBC (Other Backward Class)',
+    'EWS': 'EWS (Economically Weaker Section)',
+    'TFWS': 'TFWS (Tuition Fee Waiver Scheme)',
+    'NT1': 'NT1 (Nomadic Tribe 1)',
+    'NT2': 'NT2 (Nomadic Tribe 2)',
+    'NT3': 'NT3 (Nomadic Tribe 3)',
+    'SBC': 'SBC (Special Backward Class)',
+    'VJ': 'VJ (Vimukta Jati)',
+    'SEBC': 'SEBC (Socially and Educationally Backward Class)'
+  };
+  return fullForms[type] || type;
+};
+
 export const getSeatTypes = (colleges: College[]): string[] => {
   const seatTypes = [...new Set(colleges.map(c => c.seat_type))]
     .filter(type => type && type.trim() !== '') // Filter out empty values
-    .sort();
+    .sort()
+    .map(type => getSeatTypeFullForm(type));
   return ['ALL', ...seatTypes];
 };
 

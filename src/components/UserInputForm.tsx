@@ -76,15 +76,31 @@ export const UserInputForm = ({ onSubmit, onBack, colleges }: UserInputFormProps
               {/* Percentile */}
               <div className="space-y-4">
                 <Label>Percentile: {percentile}%</Label>
-                <div className="px-3">
-                  <Slider
-                    value={[percentile]}
-                    onValueChange={(value) => setPercentile(value[0])}
-                    max={100}
-                    min={0}
-                    step={0.1}
-                    className="w-full"
-                  />
+                <div className="grid md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Input
+                      type="number"
+                      placeholder="Enter percentile"
+                      value={percentile}
+                      onChange={(e) => {
+                        const value = Math.min(100, Math.max(0, parseFloat(e.target.value) || 0));
+                        setPercentile(value);
+                      }}
+                      min="0"
+                      max="100"
+                      step="0.1"
+                    />
+                  </div>
+                  <div className="px-3">
+                    <Slider
+                      value={[percentile]}
+                      onValueChange={(value) => setPercentile(value[0])}
+                      max={100}
+                      min={0}
+                      step={0.1}
+                      className="w-full"
+                    />
+                  </div>
                 </div>
                 <div className="flex justify-between text-xs text-muted-foreground">
                   <span>0%</span>
@@ -100,11 +116,14 @@ export const UserInputForm = ({ onSubmit, onBack, colleges }: UserInputFormProps
                     <SelectValue placeholder="Select your category" />
                   </SelectTrigger>
                   <SelectContent>
-                    {seatTypes.filter(type => type !== 'ALL').map((type) => (
-                      <SelectItem key={type} value={type}>
-                        {type}
-                      </SelectItem>
-                    ))}
+                    {seatTypes.filter(type => type !== 'ALL').map((type) => {
+                      const value = type.includes('(') ? type.split(' (')[0] : type;
+                      return (
+                        <SelectItem key={value} value={value}>
+                          {type}
+                        </SelectItem>
+                      );
+                    })}
                   </SelectContent>
                 </Select>
               </div>

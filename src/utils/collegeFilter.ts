@@ -2,23 +2,55 @@ import { College, UserPreferences, FilteredCollege } from '@/types/college';
 
 export const parseCSV = (csvText: string): College[] => {
   const lines = csvText.trim().split('\n');
-  const headers = lines[0].split(',').map(h => h.replace(/"/g, ''));
   
-  return lines.slice(1).map(line => {
-    const values = line.split(',').map(v => v.replace(/"/g, ''));
-    const college: any = {};
+  // Proper CSV parsing that handles quoted fields with commas
+  const parseCSVLine = (line: string): string[] => {
+    const result: string[] = [];
+    let current = '';
+    let inQuotes = false;
     
-    headers.forEach((header, index) => {
-      const value = values[index];
-      if (['sum', 'count', 'max', 'min', 'mean', 'max-min', 'max-mean'].includes(header)) {
-        college[header] = parseFloat(value) || 0;
+    for (let i = 0; i < line.length; i++) {
+      const char = line[i];
+      
+      if (char === '"') {
+        inQuotes = !inQuotes;
+      } else if (char === ',' && !inQuotes) {
+        result.push(current.trim());
+        current = '';
       } else {
-        college[header] = value;
+        current += char;
       }
-    });
+    }
     
-    return college as College;
-  });
+    result.push(current.trim());
+    return result;
+  };
+  
+  const headers = parseCSVLine(lines[0]);
+  
+  return lines.slice(1)
+    .map(line => {
+      const values = parseCSVLine(line);
+      const college: any = {};
+      
+      headers.forEach((header, index) => {
+        const value = values[index] || ''; // Ensure we have a value
+        if (['sum', 'count', 'max', 'min', 'mean', 'max-min', 'max-mean'].includes(header)) {
+          college[header] = parseFloat(value) || 0;
+        } else {
+          college[header] = value;
+        }
+      });
+      
+      return college as College;
+    })
+    .filter(college => 
+      // Filter out rows with missing essential data
+      college.college_name && 
+      college.seat_type && 
+      college.branch && 
+      college.score_type
+    );
 };
 
 export const filterColleges = (
@@ -70,13 +102,17 @@ export const filterColleges = (
 };
 
 export const getSeatTypes = (colleges: College[]): string[] => {
-  const seatTypes = [...new Set(colleges.map(c => c.seat_type))];
-  return ['ALL', ...seatTypes.sort()];
+  const seatTypes = [...new Set(colleges.map(c => c.seat_type))]
+    .filter(type => type && type.trim() !== '') // Filter out empty values
+    .sort();
+  return ['ALL', ...seatTypes];
 };
 
 export const getBranches = (colleges: College[]): string[] => {
-  const branches = [...new Set(colleges.map(c => c.branch))];
-  return ['ALL', ...branches.sort()];
+  const branches = [...new Set(colleges.map(c => c.branch))]
+    .filter(branch => branch && branch.trim() !== '') // Filter out empty values
+    .sort();
+  return ['ALL', ...branches];
 };
 
 export const getCollegeTypes = (): string[] => {

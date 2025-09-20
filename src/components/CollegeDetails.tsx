@@ -10,8 +10,24 @@ interface CollegeDetailsProps {
 }
 
 export const CollegeDetails = ({ college, onBack }: CollegeDetailsProps) => {
-  const percentileRange = college.max - college.min;
-  const variability = percentileRange > 5 ? 'High' : percentileRange > 2 ? 'Medium' : 'Low';
+  // Correct analysis calculations
+  const percentileRange = Math.abs(college.max - college.min);
+  const variability = percentileRange > 10 ? 'High' : percentileRange > 5 ? 'Medium' : 'Low';
+  
+  // More accurate probability calculations based on user percentile vs cutoffs
+  const getAdmissionProbability = (userPercentile: number, cutoff: number) => {
+    const diff = userPercentile - cutoff;
+    if (diff >= 5) return 'Very High';
+    if (diff >= 2) return 'High'; 
+    if (diff >= 0) return 'Good';
+    if (diff >= -2) return 'Moderate';
+    return 'Low';
+  };
+
+  // Get user percentile from fitScore calculation (reverse engineering)
+  const estimatedUserPercentile = college.min + (100 - college.fitScore);
+  const minProbability = getAdmissionProbability(estimatedUserPercentile, college.min);
+  const avgProbability = getAdmissionProbability(estimatedUserPercentile, college.mean);
 
   return (
     <div className="min-h-screen bg-background">
@@ -207,11 +223,23 @@ export const CollegeDetails = ({ college, onBack }: CollegeDetailsProps) => {
                   <div className="space-y-1">
                     <div className="flex justify-between">
                       <span>Based on Min Cutoff:</span>
-                      <span className="font-medium text-success">High</span>
+                      <span className={`font-medium ${
+                        minProbability === 'Very High' || minProbability === 'High' ? 'text-success' : 
+                        minProbability === 'Good' ? 'text-primary' : 
+                        minProbability === 'Moderate' ? 'text-warning' : 'text-destructive'
+                      }`}>
+                        {minProbability}
+                      </span>
                     </div>
                     <div className="flex justify-between">
                       <span>Based on Average:</span>
-                      <span className="font-medium text-primary">Good</span>
+                      <span className={`font-medium ${
+                        avgProbability === 'Very High' || avgProbability === 'High' ? 'text-success' : 
+                        avgProbability === 'Good' ? 'text-primary' : 
+                        avgProbability === 'Moderate' ? 'text-warning' : 'text-destructive'
+                      }`}>
+                        {avgProbability}
+                      </span>
                     </div>
                   </div>
                 </div>

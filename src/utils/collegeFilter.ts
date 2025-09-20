@@ -83,14 +83,30 @@ export const filterColleges = (
       return true;
     })
     .map(college => {
-      // Calculate fit score (higher is better)
+      // Calculate fit score (higher is better) - more nuanced approach
       const percentileDiff = preferences.percentile - college.min;
-      const fitScore = Math.max(0, 100 - percentileDiff);
-      const isRecommended = percentileDiff <= 5 && percentileDiff >= 0;
+      
+      // Base fit score on how much above minimum cutoff the user is
+      let fitScore = 0;
+      if (percentileDiff >= 0) {
+        // User qualifies - score based on safety margin
+        fitScore = Math.min(100, 70 + Math.min(30, percentileDiff * 2));
+      } else {
+        // User doesn't qualify - score based on how close they are
+        fitScore = Math.max(0, 70 + percentileDiff * 5);
+      }
+      
+      // Bonus for being close to mean (sweet spot)
+      const meanDiff = Math.abs(preferences.percentile - college.mean);
+      if (meanDiff <= 3) {
+        fitScore = Math.min(100, fitScore + 10);
+      }
+      
+      const isRecommended = percentileDiff >= 0 && percentileDiff <= 8;
       
       return {
         ...college,
-        fitScore,
+        fitScore: Math.round(fitScore),
         isRecommended
       };
     })

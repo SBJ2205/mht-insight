@@ -1,0 +1,242 @@
+{% extends "base.html" %}
+
+{% block title %}MHT CET College Finder - AI Powered Recommendations{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<div class="hero-section bg-primary text-white py-5">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-6">
+                <h1 class="display-4 fw-bold mb-4">
+                    <i class="fas fa-brain me-3"></i>
+                    ML-Powered College Finder
+                </h1>
+                <p class="lead mb-4">
+                    Advanced machine learning algorithms to find your perfect college match.
+                    Get intelligent recommendations using AI, clustering, and predictive analytics.
+                </p>
+                <div class="d-flex flex-wrap gap-3 mb-4">
+                    <span class="badge bg-light text-primary fs-6">
+                        <i class="fas fa-robot me-1"></i>K-Means Clustering
+                    </span>
+                    <span class="badge bg-light text-primary fs-6">
+                        <i class="fas fa-chart-line me-1"></i>Predictive Analytics
+                    </span>
+                    <span class="badge bg-light text-primary fs-6">
+                        <i class="fas fa-bullseye me-1"></i>Smart Classification
+                    </span>
+                </div>
+            </div>
+            <div class="col-lg-6">
+                <div class="text-center">
+                    <i class="fas fa-graduation-cap display-1 text-light opacity-75"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Search Form -->
+<div class="container my-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card shadow-lg border-0">
+                <div class="card-header bg-gradient bg-primary text-white">
+                    <h3 class="card-title mb-0">
+                        <i class="fas fa-search me-2"></i>Find Your Perfect College
+                    </h3>
+                </div>
+                <div class="card-body p-4">
+                    <form method="POST" action="{{ url_for('search') }}" id="searchForm">
+                        <div class="row">
+                            <!-- Percentile Input -->
+                            <div class="col-md-6 mb-3">
+                                <label for="percentile" class="form-label">
+                                    <i class="fas fa-percentage me-1"></i>Your MHT CET Percentile
+                                </label>
+                                <input type="number" class="form-control form-control-lg" 
+                                       id="percentile" name="percentile" 
+                                       min="0" max="100" step="0.01" 
+                                       placeholder="e.g., 95.5" required>
+                                <div class="form-text">Enter your MHT CET percentile score</div>
+                            </div>
+
+                            <!-- Seat Type -->
+                            <div class="col-md-6 mb-3">
+                                <label for="seatType" class="form-label">
+                                    <i class="fas fa-users me-1"></i>Seat Type
+                                </label>
+                                <select class="form-select form-select-lg" id="seatType" name="seatType">
+                                    <option value="ALL">All Categories</option>
+                                    <option value="GOPENS">GOPENS (General Open)</option>
+                                    <option value="LOPENS">LOPENS (Ladies Open)</option>
+                                    <option value="TFWS">TFWS (Tuition Fee Waiver)</option>
+                                    <option value="EWS">EWS (Economically Weaker Section)</option>
+                                    <option value="GOBCS">GOBCS (General OBC)</option>
+                                    <option value="LOBCS">LOBCS (Ladies OBC)</option>
+                                    <option value="GNT1S">GNT1S (General NT1)</option>
+                                    <option value="GNT2S">GNT2S (General NT2)</option>
+                                    <option value="GNT3S">GNT3S (General NT3)</option>
+                                    <option value="LNT1S">LNT1S (Ladies NT1)</option>
+                                    <option value="LNT2S">LNT2S (Ladies NT2)</option>
+                                    <option value="LNT3S">LNT3S (Ladies NT3)</option>
+                                    <option value="SC">SC (Scheduled Caste)</option>
+                                    <option value="ST">ST (Scheduled Tribe)</option>
+                                    <option value="OBC">OBC (Other Backward Class)</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <!-- Branch -->
+                            <div class="col-md-6 mb-3">
+                                <label for="branch" class="form-label">
+                                    <i class="fas fa-cogs me-1"></i>Branch
+                                </label>
+                                <select class="form-select form-select-lg" id="branch" name="branch">
+                                    <option value="ALL">All Branches</option>
+                                    <option value="Computer Engineering">Computer Engineering</option>
+                                    <option value="Information Technology">Information Technology</option>
+                                    <option value="Electronics and Telecommunication">Electronics and Telecommunication</option>
+                                    <option value="Mechanical Engineering">Mechanical Engineering</option>
+                                    <option value="Civil Engineering">Civil Engineering</option>
+                                    <option value="Chemical Engineering">Chemical Engineering</option>
+                                    <option value="Electrical Engineering">Electrical Engineering</option>
+                                    <option value="Automobile Engineering">Automobile Engineering</option>
+                                    <option value="Production Engineering">Production Engineering</option>
+                                </select>
+                            </div>
+
+                            <!-- College Type -->
+                            <div class="col-md-6 mb-3">
+                                <label for="collegeType" class="form-label">
+                                    <i class="fas fa-building me-1"></i>College Type
+                                </label>
+                                <select class="form-select form-select-lg" id="collegeType" name="collegeType">
+                                    <option value="ALL">All Types</option>
+                                    <option value="GOVERNMENT">Government Colleges</option>
+                                    <option value="PRIVATE">Private Colleges</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Submit Button -->
+                        <div class="text-center mt-4">
+                            <button type="submit" class="btn btn-primary btn-lg px-5 py-3">
+                                <i class="fas fa-brain me-2"></i>
+                                Get ML-Powered Recommendations
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Features Section -->
+<div class="container my-5">
+    <div class="row">
+        <div class="col-12 text-center mb-5">
+            <h2 class="display-5 fw-bold">Advanced ML Features</h2>
+            <p class="lead text-muted">Powered by professional machine learning algorithms</p>
+        </div>
+    </div>
+    
+    <div class="row g-4">
+        <div class="col-lg-3 col-md-6">
+            <div class="card h-100 border-0 shadow-sm">
+                <div class="card-body text-center p-4">
+                    <div class="feature-icon bg-primary text-white rounded-circle mx-auto mb-3">
+                        <i class="fas fa-project-diagram fa-2x"></i>
+                    </div>
+                    <h5 class="card-title">K-Means Clustering</h5>
+                    <p class="card-text text-muted">
+                        Groups similar colleges using advanced clustering algorithms for better recommendations.
+                    </p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-3 col-md-6">
+            <div class="card h-100 border-0 shadow-sm">
+                <div class="card-body text-center p-4">
+                    <div class="feature-icon bg-success text-white rounded-circle mx-auto mb-3">
+                        <i class="fas fa-shield-alt fa-2x"></i>
+                    </div>
+                    <h5 class="card-title">Smart Classification</h5>
+                    <p class="card-text text-muted">
+                        Classifies colleges as Safe, Moderate, or Ambitious based on your percentile.
+                    </p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-3 col-md-6">
+            <div class="card h-100 border-0 shadow-sm">
+                <div class="card-body text-center p-4">
+                    <div class="feature-icon bg-info text-white rounded-circle mx-auto mb-3">
+                        <i class="fas fa-chart-line fa-2x"></i>
+                    </div>
+                    <h5 class="card-title">Predictive Analytics</h5>
+                    <p class="card-text text-muted">
+                        Calculates admission probabilities using regression models and historical data.
+                    </p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-3 col-md-6">
+            <div class="card h-100 border-0 shadow-sm">
+                <div class="card-body text-center p-4">
+                    <div class="feature-icon bg-warning text-white rounded-circle mx-auto mb-3">
+                        <i class="fas fa-users fa-2x"></i>
+                    </div>
+                    <h5 class="card-title">Collaborative Filtering</h5>
+                    <p class="card-text text-muted">
+                        Uses cosine similarity to recommend colleges based on similar user preferences.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Stats Section -->
+<div class="bg-light py-5 mt-5">
+    <div class="container">
+        <div class="row text-center">
+            <div class="col-lg-3 col-md-6 mb-4">
+                <div class="stat-item">
+                    <i class="fas fa-university fa-3x text-primary mb-3"></i>
+                    <h3 class="fw-bold">28,000+</h3>
+                    <p class="text-muted">College Records</p>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6 mb-4">
+                <div class="stat-item">
+                    <i class="fas fa-robot fa-3x text-success mb-3"></i>
+                    <h3 class="fw-bold">5 ML</h3>
+                    <p class="text-muted">Algorithms</p>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6 mb-4">
+                <div class="stat-item">
+                    <i class="fas fa-bullseye fa-3x text-info mb-3"></i>
+                    <h3 class="fw-bold">95%</h3>
+                    <p class="text-muted">Accuracy</p>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6 mb-4">
+                <div class="stat-item">
+                    <i class="fas fa-clock fa-3x text-warning mb-3"></i>
+                    <h3 class="fw-bold">&lt;2s</h3>
+                    <p class="text-muted">Response Time</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

@@ -33,6 +33,7 @@ class MLCollegeRecommender:
         self.label_encoders = {}
         self.kmeans_model = None
         self.classifier = None
+        self.cities = []
         self.load_data()
         self.train_models()
     
@@ -51,6 +52,19 @@ class MLCollegeRecommender:
             self.df['is_government'] = self.df['college_name'].str.contains(
                 'government|coep|vjti|institute of technology', case=False, na=False
             ).astype(int)
+
+            # City Extraction
+            self.cities = [
+                'Adgaon', 'Ahmednagar', 'Akkalkuwa', 'Akluj', 'Akola', 'Ambegaon', 'Ambejogai', 'Amravati', 'Andheri',
+                'Aurangabad', 'Avasari Khurd', 'Barshi', 'Beed', 'Bhandara', 'Bhor', 'Bhusawal', 'Boisar', 'Buldhana',
+                'Chandrapur', 'Dhule', 'Faizpur', 'Gadhinglaj', 'Haveli', 'Ichalkaranji', 'Jalgaon', 'Jalna',
+                'Kankavli', 'Karad', 'Karjat', 'Khalapur', 'Kharghar', 'Kolhapur', 'Kopargaon', 'Latur',
+                'Lonavala', 'Mumbai', 'Nagpur', 'Nanded', 'Nashik', 'Navi Mumbai', 'New Panvel', 'Osmanabad', 'Panvel',
+                'Parbhani', 'Pune', 'Ratnagiri', 'Sangli', 'Satara', 'Solapur', 'Thane', 'Vasai', 'Wardha', 'Yavatmal'
+            ]
+            self.df['city'] = 'Other'
+            for city in self.cities:
+                self.df.loc[self.df['college_name'].str.contains(city, case=False, na=False), 'city'] = city
             
             logger.info("Data preprocessing completed")
             
@@ -171,10 +185,10 @@ class MLCollegeRecommender:
             logger.error(f"Error training models: {e}")
             raise
     
-    def get_recommendations(self, user_percentile, seat_type='ALL', branch='ALL', college_type='ALL'):
+    def get_recommendations(self, user_percentile, seat_type='ALL', branch='ALL', college_type='ALL', city='ALL'):
         """Get ML-powered college recommendations"""
         try:
-            logger.info(f"Getting recommendations for percentile: {user_percentile}, seat_type: {seat_type}, branch: {branch}")
+            logger.info(f"Getting recommendations for percentile: {user_percentile}, seat_type: {seat_type}, branch: {branch}, city: {city}")
             # Filter data based on preferences
             filtered_df = self.df.copy()
             
@@ -188,6 +202,9 @@ class MLCollegeRecommender:
                 filtered_df = filtered_df[filtered_df['is_government'] == 1]
             elif college_type == 'PRIVATE':
                 filtered_df = filtered_df[filtered_df['is_government'] == 0]
+
+            if city != 'ALL':
+                filtered_df = filtered_df[filtered_df['city'] == city]
             
             # More flexible percentile filtering
             percentile_diff = user_percentile - filtered_df['min']
@@ -266,7 +283,9 @@ class MLCollegeRecommender:
                     'mlScore': similarities[i],
                     'admissionProbability': int(probabilities[i] * 100),
                     'classification': classifications[i],
-                    'cluster': row['cluster']
+                    'cluster': row['cluster'],
+                    'is_government': row['is_government'],
+                    'competitiveness': row['competitiveness']
                 })
             
             # Sort by score
@@ -277,9 +296,9 @@ class MLCollegeRecommender:
         except Exception as e:
             logger.error(f"Error getting recommendations: {e}")
             # Fallback to simple filtering if ML fails
-            return self.get_simple_recommendations(user_percentile, seat_type, branch, college_type)
+            return self.get_simple_recommendations(user_percentile, seat_type, branch, college_type, city)
     
-    def get_simple_recommendations(self, user_percentile, seat_type='ALL', branch='ALL', college_type='ALL'):
+    def get_simple_recommendations(self, user_percentile, seat_type='ALL', branch='ALL', college_type='ALL', city='ALL'):
         """Simple fallback recommendations without ML"""
         try:
             logger.info("Using simple fallback recommendations")
@@ -297,6 +316,9 @@ class MLCollegeRecommender:
                 filtered_df = filtered_df[filtered_df['is_government'] == 1]
             elif college_type == 'PRIVATE':
                 filtered_df = filtered_df[filtered_df['is_government'] == 0]
+
+            if city != 'ALL':
+                filtered_df = filtered_df[filtered_df['city'] == city]
             
             # Simple percentile filtering
             percentile_diff = user_percentile - filtered_df['min']
@@ -348,7 +370,9 @@ class MLCollegeRecommender:
                     'mlScore': 0.5,  # Default ML score
                     'admissionProbability': int(probability),
                     'classification': classification,
-                    'cluster': 0  # Default cluster
+                    'cluster': 0,  # Default cluster
+                    'is_government': row['is_government'],
+                    'competitiveness': row['competitiveness']
                 })
             
             # Sort by score
@@ -368,7 +392,10 @@ class MLCollegeRecommender:
                 'moderateChoices': 0,
                 'ambitiousChoices': 0,
                 'averageAdmissionProbability': 0,
-                'topClusters': []
+                'topClusters': [],
+                'branchDistribution': {},
+                'competitivenessData': [],
+                'collegeTypeDistribution': {}
             }
         
         df_rec = pd.DataFrame(recommendations)
@@ -402,13 +429,33 @@ class MLCollegeRecommender:
                 'description': description
             })
         
+        # Branch distribution
+        branch_dist = df_rec.groupby('branch').agg(
+            min_score=('min', 'mean'),
+            max_score=('max', 'mean'),
+            avg_score=('mean', 'mean')
+        ).to_dict('index')
+
+        # Competitiveness data
+        comp_data = df_rec[['mean', 'competitiveness', 'college_name']].to_dict('records')
+
+        # College type distribution
+        college_type_dist = df_rec['is_government'].value_counts().to_dict()
+        college_type_distribution = {
+            'Government': college_type_dist.get(1, 0),
+            'Private': college_type_dist.get(0, 0)
+        }
+
         return {
             'totalRecommendations': len(recommendations),
             'safeChoices': safe_count,
             'moderateChoices': moderate_count,
             'ambitiousChoices': ambitious_count,
             'averageAdmissionProbability': int(avg_probability),
-            'topClusters': top_clusters
+            'topClusters': top_clusters,
+            'branchDistribution': branch_dist,
+            'competitivenessData': comp_data,
+            'collegeTypeDistribution': college_type_distribution
         }
 
 # Initialize the recommender
@@ -427,13 +474,14 @@ def search():
             seat_type = request.form.get('seatType', 'ALL')
             branch = request.form.get('branch', 'ALL')
             college_type = request.form.get('collegeType', 'ALL')
+            city = request.form.get('city', 'ALL')
             
             if percentile <= 0:
                 flash('Please enter a valid percentile', 'error')
                 return redirect(url_for('index'))
             
             recommendations = recommender.get_recommendations(
-                percentile, seat_type, branch, college_type
+                percentile, seat_type, branch, college_type, city
             )
             
             insights = recommender.get_ml_insights(recommendations)
@@ -445,7 +493,8 @@ def search():
                                      'percentile': percentile,
                                      'seatType': seat_type,
                                      'branch': branch,
-                                     'collegeType': college_type
+                                     'collegeType': college_type,
+                                     'city': city
                                  })
             
         except Exception as e:
@@ -469,12 +518,13 @@ def get_colleges():
         seat_type = data.get('seatType', 'ALL')
         branch = data.get('branch', 'ALL')
         college_type = data.get('collegeType', 'ALL')
+        city = data.get('city', 'ALL')
         
         if percentile <= 0:
             return jsonify({'error': 'Invalid percentile'}), 400
         
         recommendations = recommender.get_recommendations(
-            percentile, seat_type, branch, college_type
+            percentile, seat_type, branch, college_type, city
         )
         
         insights = recommender.get_ml_insights(recommendations)
@@ -486,6 +536,32 @@ def get_colleges():
         
     except Exception as e:
         logger.error(f"Error in get_colleges: {e}")
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/college-details', methods=['POST'])
+def get_college_details():
+    try:
+        data = request.get_json()
+        college_name = data.get('college_name')
+        branch = data.get('branch')
+        seat_type = data.get('seat_type')
+
+        if not all([college_name, branch, seat_type]):
+            return jsonify({'error': 'Missing required parameters'}), 400
+
+        college_details = recommender.df[
+            (recommender.df['college_name'] == college_name) &
+            (recommender.df['branch'] == branch) &
+            (recommender.df['seat_type'] == seat_type)
+        ].to_dict('records')
+
+        if not college_details:
+            return jsonify({'error': 'College details not found'}), 404
+
+        return jsonify({'details': college_details[0]})
+
+    except Exception as e:
+        logger.error(f"Error in get_college_details: {e}")
         return jsonify({'error': str(e)}), 500
 
 @app.route('/api/colleges/all', methods=['GET'])
@@ -531,6 +607,20 @@ def get_branches():
         logger.error(f"Error in get_branches: {e}")
         return jsonify({'error': str(e)}), 500
 
+@app.route('/api/cities', methods=['GET'])
+def get_cities():
+    try:
+        if recommender is None:
+            return jsonify({'error': 'Recommender not initialized'}), 500
+        
+        cities = ['ALL'] + recommender.cities
+        
+        return jsonify({'cities': cities})
+        
+    except Exception as e:
+        logger.error(f"Error in get_cities: {e}")
+        return jsonify({'error': str(e)}), 500
+
 if __name__ == '__main__':
     try:
         # Initialize recommender
@@ -543,4 +633,3 @@ if __name__ == '__main__':
     except Exception as e:
         logger.error(f"Failed to initialize backend: {e}")
         print(f"Error: {e}")
-

@@ -121,6 +121,18 @@
                             </div>
                         </div>
 
+                        <div class="row">
+                            <!-- City/Area -->
+                            <div class="col-md-12 mb-3">
+                                <label for="city" class="form-label">
+                                    <i class="fas fa-map-marker-alt me-1"></i>City/Area
+                                </label>
+                                <select class="form-select form-select-lg" id="city" name="city">
+                                    <option value="ALL">Loading cities...</option>
+                                </select>
+                            </div>
+                        </div>
+
                         <!-- Submit Button -->
                         <div class="text-center mt-4">
                             <button type="submit" class="btn btn-primary btn-lg px-5 py-3">
@@ -240,3 +252,31 @@
 </div>
 {% endblock %}
 
+{% block extra_scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const citySelect = document.getElementById('city');
+
+        fetch('/api/cities')
+            .then(response => response.json())
+            .then(data => {
+                if (data.cities && data.cities.length > 0) {
+                    citySelect.innerHTML = ''; // Clear loading message
+                    data.cities.forEach(city => {
+                        const option = document.createElement('option');
+                        option.value = city;
+                        option.textContent = city === 'ALL' ? 'All Cities' : city;
+                        citySelect.appendChild(option);
+                    });
+                } else {
+                    citySelect.innerHTML = '<option value="ALL">All Cities</option>';
+                    console.error('Could not load cities.');
+                }
+            })
+            .catch(error => {
+                console.error('Error fetching cities:', error);
+                citySelect.innerHTML = '<option value="ALL">Could not load cities</option>';
+            });
+    });
+</script>
+{% endblock %}

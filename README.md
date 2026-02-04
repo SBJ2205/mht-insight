@@ -1,7 +1,5 @@
 # 🎓 MHT CET College Finder - Pure Python ML Application
 
-Hello World, checking if the jenkins work
-
 A powerful machine learning-powered college recommendation system built entirely in Python using Flask, scikit-learn, and modern web technologies.
 
 ## 🚀 Features

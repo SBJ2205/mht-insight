@@ -4,15 +4,16 @@ import time
 
 def test_home_page():
     # This opens the local Chrome browser
-    driver = webdriver.Chrome() 
-    driver.maximize_window() [cite: 1160, 1185]
-
+    driver = webdriver.Chrome()
+    driver.maximize_window()
+    
     # Navigate to your local or AWS deployed site
-    driver.get("http://localhost:8080") # Or your AWS IP 
-    time.sleep(2) [cite: 1171]
+    # Use localhost:8501 if you are running Streamlit locally
+    driver.get("http://localhost:8501") 
+    time.sleep(2)
 
     # Verification: Check for your specific heading
-    assert "College Finder" in driver.page_source [cite: 1173, 1192]
+    assert "MHT-CET" in driver.page_source
     
     print("Test Passed: MHT-CET Page loaded successfully!")
-    driver.quit() [cite: 1174, 1193]
+    driver.quit()

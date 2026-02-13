@@ -3,18 +3,22 @@ from selenium.webdriver.common.by import By
 import time
 
 def test_home_page():
-    # This opens the local Chrome browser
     driver = webdriver.Chrome()
     driver.maximize_window()
     
-    # Point to the default Streamlit port
-    driver.get("http://localhost:8501") 
+    # 1. Point to your local Flask app port (usually 5000)
+    # If you are running locally, it is http://localhost:5000
+    driver.get("http://localhost:5000") 
     
-    # Wait for the UI to render
+    # 2. Give the Bootstrap styles time to load
     time.sleep(5) 
 
-    # Verification: 'College' is a safe keyword for your project
-    assert "College" in driver.page_source
+    # 3. Targeted Assertion: Check for the exact H1 heading in your index.html
+    heading = driver.find_element(By.TAG_NAME, "h1").text
+    assert "ML-Powered College Finder" in heading
     
-    print("Test Passed: MHT-CET Page is live!")
+    # 4. Secondary Verification: Check for the ML badge text
+    assert "K-Means Clustering" in driver.page_source
+    
+    print("Functional Test Passed: MHT-CET ML-Powered College Finder is live!")
     driver.quit()
